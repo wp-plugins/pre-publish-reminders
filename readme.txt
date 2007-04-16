@@ -1,5 +1,5 @@
 === Plugin Name ===
-Contributors: ohrnnf
+Contributors: nickohrn
 Donate link: http://nickohrn.com
 Tags: admin, reminders
 Requires at least: 2.0
