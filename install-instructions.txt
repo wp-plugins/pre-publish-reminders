@@ -1,8 +1,0 @@
-Install Intstuctions:
-
-Extract nfoppreminder.php file to your WordPress plugins directory.  After that, just activate the plugin in the 
-plugins tab.  From that point on, you'll be able to manage your reminders from the "Manage" tab within WordPress.
-
-Uninstall:
-
-Deactivate plugin to delete all corresponding data.  Remove nfoppreminder.php from plugin directory.
