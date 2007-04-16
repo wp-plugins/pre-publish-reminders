@@ -24,3 +24,12 @@ Installation is super simple.  Follow these steps:
 1. Upload nfoppreminder.php to your '/wp-content/plugins/' directory.
 1. Activate your plugin through the 'Plugins' menu in WordPress.
 1. Manage your plugin under the manage tab in the administration menu.
+
+== Frequently Asked Questions ==
+
+To the best of my knowledge, there are no questions asked about this plugin.  If you have any, let me know!
+
+== Screenshots ==
+
+1. The administration screen in action.
+2. The awesome list displayed below your submit button.
