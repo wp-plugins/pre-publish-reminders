@@ -1,11 +1,11 @@
 === Plugin Name ===
-Contributors: ohrnnf
+Contributors: nickohrn
 Donate link: http://nickohrn.com
 Tags: admin, reminders
 Requires at least: 2.0
 
 Tested up to: 2.1.3
-Stable tag: 1.0
+Stable tag: 1.05
 
 This plugin displays a configurable list of reminders directly below the submit buttons in the WordPress Write Post interface.
 
@@ -27,7 +27,15 @@ Installation is super simple.  Follow these steps:
 
 == Frequently Asked Questions ==
 
-To the best of my knowledge, there are no questions asked about this plugin.  If you have any, let me know!
+I haven't been asked any questions, but if I were someone using this plugin I would probably say:
+
+1. Why does the color picker pop up in a new window instead of a in-page div or something like that?
+
+Answer: The ColorPicker included with the WordPress distribution (while very nice) does not position the in-page
+divs like you think it might.  In both the default WordPress administration theme and the Tiger Admin theme the placement
+is totally out of whack.  To work around this, I used the pop-up window option of that same library as a temporary
+solution until I find a javascript color picker that I like or I create my own simple one.  Until then, this will have
+to do.
 
 == Screenshots ==
 

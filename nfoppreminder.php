@@ -8,7 +8,7 @@ Version: 1.0
 Author URI: http://nickohrn.com/
 */ 
 
-/*  Copyright 2006  PLUGIN_AUTHOR_NAME  (email : PLUGIN AUTHOR EMAIL)
+/*  Copyright 2006  Nick Ohrn  (email : nickohrn@ohrnventures.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -117,6 +117,9 @@ class NFO_Pre_Publish_Reminders {
 			$editing = $current['editing'];
 		}
 		self::output_admin_table(); ?>
+		<script type="text/javascript">
+		var cp = new ColorPicker('window');
+		</script>
 				
 		<form name="reminder" id="reminder" method="post">
 		<fieldset id="reminder_text_fieldset">
@@ -126,12 +129,14 @@ class NFO_Pre_Publish_Reminders {
 		<fieldset id="reminder_color_fieldset">
 			<legend>Background Color</legend>
 			<div><input type="text" name="background_color" size="6" tabindex="2" value="#<?php if( $editing ) { echo $current['back_color']; } else { echo 'ffffff'; } ?>" id="background_color" /><br />
-			<small>Defaults to white, but you can fill in your own hex color code of length 6 (don't forget the leading #)</small></div>
+			<small><a href="#" name="background_color_select" id="background_color_select" onclick="cp.select(document.forms[0].background_color, 'background_color_select');return false;">Select Text Color</a>
+			<br />Defaults to white, but you can fill in your own hex color code of length 6 (don't forget the leading #)</small></div>
 		</fieldset>
 		<fieldset id="text_color_fieldset">
 			<legend>Text Color</legend>
 			<div><input type="text" name="text_color" size="6" tabindex="3" value="#<?php if( $editing ) { echo $current['text_color']; } else { echo '000000'; } ?>" id="text_color" /><br />
-			<small>Defaults to black, but you can fill in your own hex color code of length 6 (don't forget the leading #)</small></div>
+			<small><a href="#" name="text_color_select" id="text_color_select" onclick="cp.select(document.forms[0].text_color, 'text_color_select');return false;">Select Text Color</a>
+			<br />Defaults to black, but you can fill in your own hex color code of length 6 (don't forget the leading #)</small></div>
 		</fieldset>
 		<fieldset>
 			<legend>Text Formatting</legend>
@@ -149,8 +154,8 @@ class NFO_Pre_Publish_Reminders {
 			<input type="submit" name="submit" tabindex="6" value="Save Pre-Publish Reminder" id="ppr_submit" />
 		</p>
 		</form>
-		<?php	
-		echo '</div>';
+		</div>
+		<?php
 	}
 	
 	/**
@@ -344,7 +349,7 @@ class NFO_Pre_Publish_Reminders {
 	add_action( 'deactivate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'uninstall' ) );
 	add_action( 'admin_menu', array( 'NFO_Pre_Publish_Reminders', 'add_admin_page' ) );
 	//JS libraries not needed yet because DHTML and AJAX functionality not added for version 1.05
-//	add_action('admin_menu', array('NFO_Pre_Publish_Reminders', 'add_js_libs'));
+	add_action('admin_menu', array('NFO_Pre_Publish_Reminders', 'add_js_libs'));
 	add_action('edit_form_advanced', array( 'NFO_Pre_Publish_Reminders', 'output_reminder_list' ) );
 	add_action('admin_head', array( 'NFO_Pre_Publish_Reminders', 'add_header_stuff' ) );
 ?>
