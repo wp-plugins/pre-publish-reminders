@@ -200,12 +200,12 @@ class NFO_Pre_Publish_Reminders {
 				$action = 'added';
 			} elseif( 'edit' == $form_array['submitted'] ) {
 				$reminder_id = intval( $form_array['id'] );
-				$query = "UPDATE " . $wpdb->prefix . 'pre_publish_reminders' . " SET Reminder_Text = '$reminder_text', Reminder_Background_Color = '$back_color', Reminder_Text_Color = '$text_color', Reminder_Order = $order, Is_Bold = $bold, Is_Italic = Italic WHERE Reminder_ID = $reminder_id";
+				$query = "UPDATE " . $wpdb->prefix . 'pre_publish_reminders' . " SET Reminder_Text = '$reminder_text', Reminder_Background_Color = '$back_color', Reminder_Text_Color = '$text_color', Reminder_Order = $order, Is_Bold = $bold, Is_Italic = $italic WHERE Reminder_ID = $reminder_id";
 				$action = 'edited';
 			}
 			$result = $wpdb->query( $query );
 			
-			if( $result ) {
+			if( false !== $result ) {
 				echo "<h3>You successfully $action your reminder!</h3>";
 			} else {
 				echo '<h3>Your reminder was not added to the database.  There was an unfortunate error.</h3>';
@@ -248,6 +248,7 @@ class NFO_Pre_Publish_Reminders {
 				$return_array['is_bold'] = $result[0]['Is_Bold'];
 				$return_array['is_italic'] = $result[0]['Is_Italic'];
 				$return_array['order'] = $result[0]['Reminder_Order'];
+				$return_array['id'] = $result[0]['Reminder_ID'];
 				return $return_array;
 				echo '<h3>Now editing...</h3>';
 			} else {
