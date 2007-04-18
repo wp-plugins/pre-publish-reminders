@@ -39,7 +39,7 @@ Author URI: http://nickohrn.com/
  * Pre-Publish Reminders.
  */
 class NFO_Pre_Publish_Reminders {
-	static $version = '1.05';
+	static $version = '1.06';
 
 	/**
 	 * Install this plugin by creating a version options and creating
@@ -124,7 +124,7 @@ class NFO_Pre_Publish_Reminders {
 		<form name="reminder" id="reminder" method="post">
 		<fieldset id="reminder_text_fieldset">
 			<legend>Reminder Text</legend>
-			<div><input type="text" name="reminder_text" size="50" tabindex="1" value="<?php if( $editing ) { echo $current['reminder_text']; } else { echo ''; } ?>" id="reminder_text" /></div>
+			<div><input type="text" name="reminder_text" size="50" tabindex="1" value="<?php if( $editing ) { echo htmlentities( stripslashes( $current['reminder_text'] ) ); } else { echo ''; } ?>" id="reminder_text" /></div>
 		</fieldset>
 		<fieldset id="reminder_color_fieldset">
 			<legend>Background Color</legend>
@@ -282,7 +282,7 @@ class NFO_Pre_Publish_Reminders {
 				echo '<td>#' . $reminder['Reminder_Background_Color'] . '</td><td class="color_identifier" style="background-color: #' . $reminder['Reminder_Background_Color'] . ';"></td>';
 				echo '<td>' . $bold . '</td><td>' . $italic . '</td>';
 				echo '<td><a class="edit" href="' . basename( $_SERVER['PHP_SELF'] ) . '?page=' . basename( __FILE__ ) . '&amp;reminder_action=edit_reminder&amp;id=' . $reminder['Reminder_ID'] . '">Edit</a></td>';
-				echo '<td><a onclick="javascript: return confirm(\'Are you sure you wish to delete this reminder?\');" class="delete" href="' . basename( $_SERVER['PHP_SELF'] ) . '?page=' . basename( __FILE__ ) . '&amp;reminder_action=delete_reminder&amp;id=' . $reminder['Reminder_ID'] . '">Delete</a></td>';
+				echo '<td><a onclick="javascript: return confirm(\'Are you sure you wish to delete the reminder\n' . addslashes( htmlentities( stripslashes( $reminder['Reminder_Text'] ) ) ) . '\');" class="delete" href="' . basename( $_SERVER['PHP_SELF'] ) . '?page=' . basename( __FILE__ ) . '&amp;reminder_action=delete_reminder&amp;id=' . $reminder['Reminder_ID'] . '">Delete</a></td>';
 				echo '</tr>';
 				if( 'alternate' == $class ) {
 					$class = '';
