@@ -5,7 +5,7 @@ Tags: admin, reminders
 Requires at least: 2.0
 
 Tested up to: 2.1.3
-Stable tag: 1.07
+Stable tag: 1.0.7
 
 This plugin displays a configurable list of reminders directly below the submit buttons in the WordPress Write Post interface.
 
