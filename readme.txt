@@ -5,7 +5,7 @@ Tags: admin, reminders
 Requires at least: 2.0
 
 Tested up to: 2.1.3
-Stable tag: 1.0.7
+Stable tag: 1.1.0
 
 This plugin displays a configurable list of reminders directly below the submit buttons in the WordPress Write Post interface.
 
@@ -16,6 +16,9 @@ panel within WordPress.  I decided to deliver with this little piece of code.
 
 Your reminders can be input through the WordPress administration interface, and you can format them in a variety
 of styles.  You can change the text color, background color, and make the text bold or italic.
+
+When displaying the reminders, each reminder has a checkbox that you can check to mark that you've completed 
+that item.  The item will dim when the checkbox is checked and undim when it is unchecked.
 
 == Installation ==
 

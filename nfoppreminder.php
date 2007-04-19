@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminder List
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This nifty little plugin will allow you to setup reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 1.0.7
+Version: 1.1.0
 Author URI: http://nickohrn.com/
 */ 
 
@@ -300,10 +300,21 @@ class NFO_Pre_Publish_Reminders {
 	 */
 	function output_reminder_list() {
 		global $wpdb;
-		$query = "SELECT Reminder_Text, Reminder_Background_Color, Reminder_Text_Color, Reminder_Order, Is_Bold, Is_Italic FROM " . $wpdb->prefix . 'pre_publish_reminders ORDER BY Reminder_Order';
+		$query = "SELECT Reminder_ID, Reminder_Text, Reminder_Background_Color, Reminder_Text_Color, Reminder_Order, Is_Bold, Is_Italic FROM " . $wpdb->prefix . 'pre_publish_reminders ORDER BY Reminder_Order';
 		$reminders = $wpdb->get_results( $query, ARRAY_A );
 		if( count( $reminders ) > 0 ) {
-			echo '<div id="reminder_div"><strong>Did you remember to do all these things?</strong><ol id="reminder_list">';
+		?>
+		<script type="text/javascript">
+		function DimReminder(reminder_ID) {
+			if( $( 'reminder_' + reminder_ID + '_checkbox' ).checked ) {
+				new Effect.Opacity('reminder_' + reminder_ID,  { duration: 0.75, transition: Effect.Transitions.linear, from: 1.0, to: 0.2 });
+			} else {
+				new Effect.Opacity('reminder_' + reminder_ID,  { duration: 0.75, transition: Effect.Transitions.linear, from: 0.2, to: 1.0 });
+			}
+		}
+		</script>
+		<?php
+			echo '<div id="reminder_div"><strong>Did you remember to do all these things?</strong><form><ol id="reminder_list">';
 			foreach( $reminders as $reminder ) {
 				$this_reminder = stripslashes( $reminder['Reminder_Text'] );
 				if( $reminder['Is_Bold'] ) {
@@ -312,9 +323,9 @@ class NFO_Pre_Publish_Reminders {
 				if( $reminder['Is_Italic'] ) {
 					$this_reminder = '<em>' . $this_reminder . '</em>';
 				}
-				echo '<li style="color:#' . $reminder['Reminder_Text_Color'] . '; background-color:#' . $reminder['Reminder_Background_Color'] . ';">' . $this_reminder . '</li>';
+				echo '<li id="reminder_' . $reminder['Reminder_ID'] . '" style="color:#' . $reminder['Reminder_Text_Color'] . '; background-color:#' . $reminder['Reminder_Background_Color'] . ';"><input type="checkbox" id="reminder_' . $reminder['Reminder_ID'] . '_checkbox" name="is_completed" value="' . $reminder['Reminder_ID'] . '" onclick="DimReminder(' . $reminder['Reminder_ID'] . ')" />' . $this_reminder . '</li>';
 			}
-			echo '</ol></div>';		
+			echo '</ol></form></div>';		
 		}
 	}
 	
@@ -349,7 +360,6 @@ class NFO_Pre_Publish_Reminders {
 	add_action( 'activate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'install' ) );
 	add_action( 'deactivate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'uninstall' ) );
 	add_action( 'admin_menu', array( 'NFO_Pre_Publish_Reminders', 'add_admin_page' ) );
-	//JS libraries not needed yet because DHTML and AJAX functionality not added for version 1.05
 	add_action('admin_menu', array('NFO_Pre_Publish_Reminders', 'add_js_libs'));
 	add_action('edit_form_advanced', array( 'NFO_Pre_Publish_Reminders', 'output_reminder_list' ) );
 	add_action('admin_head', array( 'NFO_Pre_Publish_Reminders', 'add_header_stuff' ) );
