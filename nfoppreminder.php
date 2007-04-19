@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminder List
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This nifty little plugin will allow you to setup reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 1.0
+Version: 1.0.0
 Author URI: http://nickohrn.com/
 */ 
 
