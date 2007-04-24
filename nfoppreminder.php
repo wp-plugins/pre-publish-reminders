@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminder List
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This nifty little plugin will allow you to setup reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 1.1.0
+Version: 1.1.1
 Author URI: http://nickohrn.com/
 */ 
 
@@ -108,7 +108,6 @@ class NFO_Pre_Publish_Reminders {
 	 */
 	public function manage_page() {
 		global $wpdb;
-		echo '<div class="wrap">';
 		// Process all the possible input on the page.
 		if( isset( $_POST['submitted'] ) ) {
 			self::process_post_form_variables( $_POST );
@@ -116,6 +115,7 @@ class NFO_Pre_Publish_Reminders {
 			$current = self::process_get_variables( $_GET );
 			$editing = $current['editing'];
 		}
+		echo '<div class="wrap">';
 		self::output_admin_table(); ?>
 		<script type="text/javascript">
 		var cp = new ColorPicker('window');
@@ -166,11 +166,11 @@ class NFO_Pre_Publish_Reminders {
 	function process_post_form_variables( $form_array ) {
 		global $wpdb;
 		if( $form_array['reminder_text'] == '' ) {
-			echo '<h3>You have to set some reminder text!</h3>';
+			echo '<div id="message" class="error fade"><p>You have to set some reminder text!</p></div>';
 		} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $form_array['background_color'] ) )  {
-			echo '<h3>Your background color is invalid.  Remember, it has to be a 6 character hex color code!</h3>';
+			echo '<div id="message" class="error fade"><p>Your background color is invalid.  Remember, it has to be a 6 character hex color code!</p></div>';
 		} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $form_array['text_color'] ) ) {
-			echo '<h3>Your text color is invalid.  Remember, it has to be a 6 character hex color code!</h3>';
+			echo '<div id="message" class="error fade"><p>Your text color is invalid.  Remember, it has to be a 6 character hex color code!</p></div>';
 		} else {
 			//Initialize formatting variables.			
 			$bold = 0;
@@ -206,9 +206,9 @@ class NFO_Pre_Publish_Reminders {
 			$result = $wpdb->query( $query );
 			
 			if( false !== $result ) {
-				echo "<h3>You successfully $action your reminder!</h3>";
+				echo "<div id="message" class="updated fade"><p>You successfully $action your reminder!</p></div>";
 			} else {
-				echo '<h3>Your reminder was not added to the database.  There was an unfortunate error.</h3>';
+				echo '<div id="message" class="error fade"><p>Your reminder was not added to the database.  There was an unfortunate error.</p></div>';
 			}
 		}
 	}
@@ -232,9 +232,9 @@ class NFO_Pre_Publish_Reminders {
 				//Delete the reminder from the reminder table
 				$delete = "DELETE FROM " . $wpdb->prefix . 'pre_publish_reminders' . " WHERE Reminder_ID = $id";
 				$wpdb->query( $delete );
-				echo '<h3>Deletion successful.</h3>';
+				echo '<div id="message" class="updated fade"><p>Deletion successful.</p></div>';
 			} else {
-				echo '<h3>Deletion could not occur because that reminder was not found.</h3>';
+				echo '<div id="message" class="error fade"><p>Deletion could not occur because that reminder was not found.</p></div>';
 			}
 		} elseif ( 'edit_reminder' == $array['reminder_action'] ) {
 			$select = "SELECT * FROM " . $wpdb->prefix . 'pre_publish_reminders' . " WHERE Reminder_ID = $id";
@@ -250,9 +250,9 @@ class NFO_Pre_Publish_Reminders {
 				$return_array['order'] = $result[0]['Reminder_Order'];
 				$return_array['id'] = $result[0]['Reminder_ID'];
 				return $return_array;
-				echo '<h3>Now editing...</h3>';
+				echo '<div id="message" class="updated fade"><p>Now editing...</p></div>';
 			} else {
-				echo '<h3>Sorry, but there is no reminder with that ID number available for editing.</h3>';
+				echo '<div id="message" class="error fade"><p>Sorry, but there is no reminder with that ID number available for editing.</p></div>';
 			}
 		}
 	}
