@@ -206,7 +206,7 @@ class NFO_Pre_Publish_Reminders {
 			$result = $wpdb->query( $query );
 			
 			if( false !== $result ) {
-				echo "<div id="message" class="updated fade"><p>You successfully $action your reminder!</p></div>";
+				echo '<div id="message" class="updated fade"><p>You successfully $action your reminder!</p></div>';
 			} else {
 				echo '<div id="message" class="error fade"><p>Your reminder was not added to the database.  There was an unfortunate error.</p></div>';
 			}
