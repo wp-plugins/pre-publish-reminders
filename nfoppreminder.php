@@ -129,7 +129,7 @@ class NFO_Pre_Publish_Reminders {
 		<fieldset id="reminder_color_fieldset">
 			<legend>Background Color</legend>
 			<div><input type="text" name="background_color" size="6" tabindex="2" value="#<?php if( $editing ) { echo $current['back_color']; } else { echo 'ffffff'; } ?>" id="background_color" /><br />
-			<small><a href="#" name="background_color_select" id="background_color_select" onclick="cp.select(document.forms[0].background_color, 'background_color_select');return false;">Select Text Color</a>
+			<small><a href="#" name="background_color_select" id="background_color_select" onclick="cp.select(document.forms[0].background_color, 'background_color_select');return false;">Select Background Color</a>
 			<br />Defaults to white, but you can fill in your own hex color code of length 6 (don't forget the leading #)</small></div>
 		</fieldset>
 		<fieldset id="text_color_fieldset">
