@@ -39,7 +39,7 @@ Author URI: http://nickohrn.com/
  * Pre-Publish Reminders.
  */
 class NFO_Pre_Publish_Reminders {
-	static $version = '1.1.0';
+	static $version = '1.1.1';
 
 	/**
 	 * Install this plugin by creating a version options and creating
