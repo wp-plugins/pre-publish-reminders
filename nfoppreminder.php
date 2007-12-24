@@ -124,16 +124,13 @@ if(!class_exists('NFO_PPR')) {
 			global $wpdb;
 			// Process all the possible input on the page.
 			if( isset( $_POST['submitted'] ) ) {
-				self::process_post_form_variables( $_POST );
+				NFO_PPR::process_post_form_variables( $_POST );
 			} elseif( isset( $_GET['reminder_action'] ) && isset ( $_GET['id'] ) ) {
-				$current = self::process_get_variables( $_GET );
+				$current = NFO_PPR::process_get_variables( $_GET );
 				$editing = $current['editing'];
 			}
 			echo '<div class="wrap">';
-			self::output_admin_table(); ?>
-			<script type="text/javascript">
-			var cp = new ColorPicker('window');
-			</script>
+			NFO_PPR::output_admin_table(); ?>
 
 			<form name="reminder" id="reminder" method="post">
 			<fieldset id="reminder_text_fieldset">
