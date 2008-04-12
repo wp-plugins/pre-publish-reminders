@@ -1,13 +1,13 @@
 === Plugin Name ===
 Contributors: nickohrn
 Donate link: http://nickohrn.com
-Tags: admin, reminders, list
-Requires at least: 2.3.0
+Tags: admin, reminders, list, Post
+Requires at least: 2.5.0
 
-Tested up to: 2.3.1
-Stable tag: 2.0.1
+Tested up to: 2.5.1
+Stable tag: 3.1.0
 
-This plugin displays a configurable list of reminders directly below the submit buttons in the WordPress "Write Post" interface.
+This plugin displays a configurable list of reminders directly below the Categories meta box in the Write Post interface.
 
 == Description ==
 
@@ -15,7 +15,7 @@ Lorelle, of Lorelle on WordPress fame requested a simple reminder plugin that co
 panel within WordPress.  I decided to deliver with this little piece of code.
 
 Your reminders are input through the WordPress administration interface, and you can format them in a variety
-of ways.  You can change the text color, background color, and make the text bold or italic.
+of ways.  You can change the text color, background color, and make the text strong, emphasized, and underlined.
 
 When displaying the reminders, each reminder has a checkbox that you can check to mark that you've completed 
 that item.  The item will be dimmed when the checkbox is checked and undimmed when unchecked.  Use this feature 
@@ -25,18 +25,21 @@ unchecked and all reminders will appear.
 
 == Installation ==
 
+IMPORTANT UPGRADE NOTE
+If you're upgrading, please deactivate the Pre-Publish Reminder plugin before installation of the new version.
+
 Installation is super simple.  Follow these steps:
 
 1. Upload nfoppreminder.php to your '/wp-content/plugins/' directory.
 2. Activate your plugin through the 'Plugins' menu in WordPress.
-3. Manage your reminders under the manage tab in the administration menu.
-
-If you're upgrading, there's some important things to remember.  First, you need to deactivate the original
-version of the plugin, then follow the instructions above.
+3. Manage your reminders under the Manage/Publish Reminders tab in the administration menu.
 
 == Frequently Asked Questions ==
+=How do I edit a reminder?=
+Click on the sort order in the Manage/Publish Reminders interface.
+
 
 == Screenshots ==
 
 1. The administration screen in action.
-2. The reminder list displayed below the post submit buttons.
+2. The reminder list displayed below the post categories buttons.

@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminders
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This plugin allows you to set reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 3.0.0
+Version: 3.1.0
 Author URI: http://nickohrn.com/
 */
 
@@ -40,7 +40,7 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 	 * Pre-Publish Reminders.
 	 */
 	class NFO_Pre_Publish_Reminders {
-		static $version = '3.0.0';
+		static $version = '3.1.0';
 		static $version_option_name = 'NFO_Pre_Publish_Reminders_Version';
 		static $table_name = 'NFO_Pre_Publish_Reminders';
 
@@ -56,19 +56,19 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 			
 			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 
+			echo 'stuff';
+
 			// If the version isn't the same as it was in the past, upgrade the table.
 			if( NFO_Pre_Publish_Reminders::$version != get_option( NFO_Pre_Publish_Reminders::$version_option_name ) ) {
-			
 				// Make sure the table doesn't already exist...
 				if( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
-				
 					// Create the query that will be executed to create the table to hold all the information about reminders
 					$query = "CREATE TABLE $table_name(
 								id INT(9) NOT NULL AUTO_INCREMENT,
 								reminder TEXT NOT NULL,
-								back_color VARCHAR(6) DEFAULT 'FFFFFF' NOT NULL,
+								back_color VARCHAR(6) DEFAULT 'ffffff' NOT NULL,
 								text_color VARCHAR(6) DEFAULT '000000' NOT NULL,
-								order INT(9) NOT NULL,
+								sort_order INT(9) NOT NULL,
 								is_strong BOOL NOT NULL,
 								is_emphasized BOOL NOT NULL,
 								is_underlined BOOL NOT NULL,
@@ -80,7 +80,7 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 					
 					// If the option already exists, update it... Otherwise add it
 					if( get_option( NFO_Pre_Publish_Reminders::$version_option_name ) ) {
-						update_option( NFO_Pre_Publish_Reminders::$versionOptionName, NFO_Pre_Publish_Reminders::$version );
+						update_option( NFO_Pre_Publish_Reminders::$version_option_name, NFO_Pre_Publish_Reminders::$version );
 					} else {
 						add_option( NFO_Pre_Publish_Reminders::$version_option_name, NFO_Pre_Publish_Reminders::$version );
 					}
@@ -105,10 +105,10 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 			
 				// Drop the table
 				$wpdb->query( "DROP TABLE $table_name" );
-				
-				// Remove the version option
-				delete_option( NFO_Pre_Publish_Reminders::$version_option_name );
 			}
+							
+			// Remove the version option
+			delete_option( NFO_Pre_Publish_Reminders::$version_option_name );
 		}
 
 		/**
@@ -117,7 +117,25 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 * @return null
 		 */
 		function add_admin_page() {
-			add_management_page('Pre-Publish Reminders', 'Pre-Publish Reminders', 8, basename(__FILE__), array( 'NFO_Pre_Publish_Reminders', 'manage_page' ) );
+			$page = add_management_page( 'Publishing Reminders', 'Publishing Reminders', 8, basename( __FILE__ ), array( 'NFO_Pre_Publish_Reminders', 'manage_page' ) );
+			add_meta_box('reminders', 'Pre-Publish Reminders', array('NFO_Pre_Publish_Reminders', 'output_reminder_list'), 'post', 'normal');
+			wp_enqueue_script( 'admin-forms' );
+		}
+		
+		function admin_head() {
+			?>
+<script type="text/javascript">
+/* <![CDATA[ */
+function PPRDimReminder(id) {
+	if( jQuery( "#reminder_" + id + "_checkbox" ).attr("checked")) {
+		jQuery( "#reminder_" + id ).fadeTo( 1000, .2 );
+	} else {
+		jQuery( "#reminder_" + id ).fadeTo( 1000, 1 );
+	}
+}
+/* ]]> */
+</script>
+			<?php
 		}
 
 		/**
@@ -130,12 +148,18 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 			// Retrieve the glob WP database object.
 			global $wpdb;
 			
+			$current = array();
+			
 			// Process all the possible input on the page.
-			if( isset( $_POST['submitted'] ) ) {
-				NFO_Pre_Publish_Reminders::process_post_form_variables( $_POST );
-			} elseif( isset( $_GET['reminder_action'] ) && isset ( $_GET['id'] ) ) {
-				$current = NFO_Pre_Publish_Reminders::process_get_variables( $_GET );
-				$editing = $current['editing'];
+			if( isset( $_POST['submit'] ) ) {
+				$current = NFO_Pre_Publish_Reminders::process_add_or_edit( $_POST );
+				
+			} else if( isset( $_POST['deleteit'] ) ) {
+				NFO_Pre_Publish_Reminders::process_delete( $_POST );
+				
+			} else if( isset ( $_GET['reminder_id'] ) ) {
+				$current = NFO_Pre_Publish_Reminders::get_reminder( $_GET['reminder_id'] );
+				
 			}
 			
 			?>
@@ -168,30 +192,30 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 							<tr class="form-field form-required">
 								<th scope="row" valign="top"><label for="reminder_text">Reminder Text</label>
 								<td>
-									<textarea id="reminder_text" style="width:97%;" cols="50" rows="3" name="reminder_text"></textarea><br />
+									<textarea id="reminder_text" style="width:97%;" cols="50" rows="3" name="reminder_text"><?php echo $current['reminder']; ?></textarea><br />
 									Enter the reminder text that you want to be displayed when writing a post.
 								</td>
 							</tr>
 							<tr class="form-field form-required">
 								<th scope="row" valign="top"><label for="reminder_text_color">Text Color</label>
 								<td>
-									<input id="reminder_text_color" type="text" size="10" value="#000000" name="reminder_text_color" /><br />
+									<input value="<?php echo isset( $current['text_color'] ) ? '#' . $current['text_color'] : '#000000'; ?>" id="reminder_text_color" type="text" size="10" name="reminder_text_color" /><br />
 									Choose a foreground color that will make this reminder stand out.
 								</td>
 							</tr>
 							<tr class="form-field form-required">
 								<th scope="row" valign="top"><label for="reminder_back_color">Background Color</label>
 								<td>
-									<input id="reminder_back_color" type="text" size="10" value="#ffffff" name="reminder_back_color" /><br />
+									<input value="<?php echo isset( $current['back_color'] ) ? '#' . $current['back_color'] : '#ffffff'; ?>" id="reminder_back_color" type="text" size="10" name="reminder_back_color" /><br />
 									Choose a background color that will make this reminder stand out.
 								</td>
 							</tr>
 							<tr class="form-field form-required">
 								<th scope="row" valign="top">Modifiers</th>
 								<td>
-									<input id="is_strong" type="checkbox" name="is_strong" /> <label for="is_strong">Strong?</label><br />
-									<input id="is_emphasized" type="checkbox" name="is_emphasized" /> <label for="is_emphasized">Emphasized?</label><br />
-									<input id="is_underlined" type="checkbox" name="is_underlined" /> <label for="is_underlined">Underlined?</label><br />
+									<input <?php echo $current['is_strong'] ? 'checked="checked"' : ''; ?> id="is_strong" type="checkbox" name="is_strong" /> <label for="is_strong">Strong?</label><br />
+									<input <?php echo $current['is_emphasized'] ? 'checked="checked"' : ''; ?> id="is_emphasized" type="checkbox" name="is_emphasized" /> <label for="is_emphasized">Emphasized?</label><br />
+									<input <?php echo $current['is_underlined'] ? 'checked="checked"' : ''; ?> id="is_underlined" type="checkbox" name="is_underlined" /> <label for="is_underlined">Underlined?</label><br />
 									Select the modifiers you wish to apply to your reminder.
 								</td>
 							</tr>
@@ -200,10 +224,10 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 								<td>
 									<select class="postform" id="sort_order" name="sort_order">
 										<?php
-										$range = range(1, $number_reminders + 1);
+										$range = range(1, $number_reminders + ( isset( $current['id'] ) ? 0 : 1 ) );
 										foreach($range as $number) {
 											?>
-											<option value="<?php echo $number; ?>"><?php echo $number; ?></option>
+											<option <?php echo $current['sort_order'] == $number ? 'selected="selected"' : ''; ?> value="<?php echo $number; ?>"><?php echo $number; ?></option>
 											<?php
 										}
 										?>
@@ -214,7 +238,14 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 						</tbody>
 					</table>
 					<p class="submit">
-						<input class="button" type="submit" value="Add Reminder" name="submit" />
+						<?php
+						if( isset( $current['id'] ) ) {
+						?>
+						<input type="hidden" name="id" value="<?php echo $current['id']; ?>" />
+						<?php
+						}
+						?>
+						<input class="button" type="submit" value="Save Reminder" name="submit" />
 					</p>
 				</form>
 				
@@ -234,14 +265,14 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 			global $wpdb;
 			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
-			$query = "SELECT * FROM $table_name ORDER BY sort ASC";
+			$query = "SELECT * FROM $table_name ORDER BY sort_order ASC";
 			$reminders = $wpdb->get_results( $query , ARRAY_A);
 			?>
 			
 			<table class="widefat">
 				<thead>
 					<tr>
-						<th scope="col"><input type="checkbox" /></th>
+						<th scope="col"><input type="checkbox" onClick="checkAll(document.getElementById('reminder-manage'));" /></th>
 						<th scope="col">Sort Order</th>
 						<th scope="col">Reminder Text</th>
 						<th scope="col" colspan="2">Text Color</th>
@@ -264,9 +295,9 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 					$underlined = $reminder['is_underlined'] ? '<span style="text-decoration: underline;">Yes</span>' : 'No';
 					
 					?>
-					<tr class="<?php echo $class; ?>" id="order_<?php echo $reminder['order']; ?>">
-						<th scope="row"><input type="checkbox" name="reminder[<?php echo $reminder['id']; ?>]" id="reminder_cb_<?php echo $reminder['id']; ?>" /></th>
-						<td><?php echo $reminder['order']; ?></td>
+					<tr class="<?php echo $class; ?>" id="order_<?php echo $reminder['sort_order']; ?>">
+						<th scope="row"><input type="checkbox" name="delete[]" value="<?php echo $reminder['id']; ?>" id="reminder_cb_<?php echo $reminder['id']; ?>" /></th>
+						<td><a href="/wp-admin/edit.php?page=nfoppreminder.php&amp;reminder_id=<?php echo $reminder['id']; ?>"><?php echo $reminder['sort_order']; ?></a></td>
 						<td><?php echo stripslashes($reminder['reminder']); ?></td>
 						<td>#<?php echo $reminder['text_color']; ?></td>
 						<td class="color-indentifier" style="background-color: #<?php echo $reminder['text_color']; ?>;"></td>
@@ -295,98 +326,108 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 *
 		 * @param Array, an array of post variables.
 		 */
-		function process_post_form_variables( $form_array ) {
+		function process_add_or_edit( $values ) {
+		
+			// Retrieve the global WP database object
 			global $wpdb;
-			if( $form_array['reminder'] == '' ) {
+			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
+			
+			if( $values['reminder_text'] == '' ) {
 				echo '<div id="message" class="error fade"><p>You have to set some reminder text!</p></div>';
-			} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $form_array['background_color'] ) )  {
+			} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $values['reminder_back_color'] ) )  {
 				echo '<div id="message" class="error fade"><p>Your background color is invalid.  Remember, it has to be a 6 character hex color code!</p></div>';
-			} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $form_array['text_color'] ) ) {
+			} elseif( !preg_match('/^#[a-fA-F0-9]{6}$/', $values['reminder_text_color'] ) ) {
 				echo '<div id="message" class="error fade"><p>Your text color is invalid.  Remember, it has to be a 6 character hex color code!</p></div>';
 			} else {
+				
 				//Initialize formatting variables.
-				$bold = 0;
-				$italic = 0;
-				if ( is_array( $form_array['formatting'] ) ) {
-					foreach ( $form_array['formatting'] as $format_option ) {
-						switch($format_option) {
-							case "bold":
-								$bold = 1;
-								break;
-							case "italic":
-								$italic = 1;
-								break;
-						}
-					}
-				}
-				$reminder_text = $wpdb->escape( $form_array['reminder'] );
-				$back_color = $wpdb->escape( substr( $form_array['background_color'], 1 ) );
-				$text_color = $wpdb->escape( substr( $form_array['text_color'], 1 ) );
-				$order = $wpdb->escape( $form_array['sort'] );
+				$strong = $values['is_strong'] == 'on' ? 1 : 0;
+				$emphasized = $values['is_emphasized'] == 'on' ? 1 : 0;;
+				$underlined = $values['is_underlined'] == 'on' ? 1 : 0;;
+				
+				$reminder_text = $wpdb->escape( $values['reminder_text'] );
+				$back_color = $wpdb->escape( substr( $values['reminder_back_color'], 1 ) );
+				$text_color = $wpdb->escape( substr( $values['reminder_text_color'], 1 ) );
+				$order = $wpdb->escape( $values['sort_order'] );
 
-				if( 'add' == $form_array['submitted'] ) {
-					$get_num_reminders = "(SELECT COUNT( sort ) AS num_reminders FROM " . $wpdb->prefix . "NFO_Pre_Publish_Reminders)";
-					$num_reminders = $wpdb->get_results( $get_num_reminders, ARRAY_A );
-					$num = $num_reminders[0]['num_reminders'];
-					$query = "INSERT INTO " . $wpdb->prefix . NFO_Pre_Publish_Reminders::$tableName . " ( reminder , back_color, text_color, sort, is_bold, is_italic ) VALUES ( '$reminder_text', '$back_color', '$text_color', ($num + 1), $bold, $italic )";
-					$action = 'added';
-				} elseif( 'edit' == $form_array['submitted'] ) {
-					$reminder_id = intval( $form_array['id'] );
-					$query = "UPDATE " . $wpdb->prefix . NFO_Pre_Publish_Reminders::$tableName . " SET reminder = '$reminder_text', back_color = '$back_color', text_color = '$text_color', sort = $order, is_bold = $bold, is_italic = $italic WHERE id = $reminder_id";
+				if( isset( $values['id'] ) ) {
+					$id = intval( $values['id'] );
+					$query = "UPDATE $table_name 
+								SET 
+								reminder = '$reminder_text', back_color = '$back_color', 
+								text_color = '$text_color', sort_order = $order, is_strong = $strong, 
+								is_emphasized = $emphasized, is_underlined = $underlined 
+								WHERE id = $id";
 					$action = 'edited';
+					$result = $wpdb->query( $query );
+					
+				} else {
+				
+					$query = "INSERT INTO $table_name 
+								( reminder , back_color, text_color, sort_order, is_strong, is_emphasized, is_underlined ) 
+								VALUES 
+								( '$reminder_text', '$back_color', '$text_color', $order, $strong, $emphasized, $underlined )";
+					$action = 'added';
+					$update_order_result = $wpdb->query( "UPDATE $table_name SET sort_order = sort_order + 1 WHERE sort_order >= $order" );
+					$result = $wpdb->query( $query );
+					
 				}
-				$result = $wpdb->query( $query );
 
 				if( false !== $result ) {
 					echo '<div id="message" class="updated fade"><p>You successfully ' . $action . ' your reminder!</p></div>';
+					return;
 				} else {
 					echo '<div id="message" class="error fade"><p>Your reminder was not added to the database.  There was an unfortunate error.</p></div>';
 				}
 			}
+			
+			return NFO_Pre_Publish_Reminders::populate_current( $values );
+		}
+		
+		function populate_current( $values ) {
+			$current = array();
+			
+			$current['back_color'] = substr($values['reminder_back_color'], 1);
+			$current['text_color'] = substr($values['reminder_text_color'], 1);
+			$current['reminder'] = $values['reminder_text'];
+			$current['sort_order'] = $values['sort_order'];
+			$current['is_strong'] = $values['is_strong'];
+			$current['is_emphasized'] = $values['is_emphasized'];
+			$current['is_underlined'] = $values['is_underlined'];
+			
+			if( isset( $values['id'] ) ) {
+				$current['id'] = $values['id'];
+			}
+			
+			return $current;
+		}
+		
+		function process_delete( $values ) {
+			
+			// Retrieve the global WP database object
+			global $wpdb;
+			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
+			
+			foreach( $values['delete'] as $id_to_delete ) {
+				$wpdb->query( "DELETE FROM $table_name WHERE id = " . $wpdb->escape( $id_to_delete ) );
+			}
 		}
 
-		/**
-		 * Process the variables contained in the $_GET array.  Specifically, add or delete a reminder.
-		 */
-		function process_get_variables( $array ) {
+		function get_reminder( $reminder_id ) {
+			
+			// Retrieve the global WP database object
 			global $wpdb;
-			$id = intval( $wpdb->escape( $array['id'] ) );
-			if( 'delete_reminder' == $array['reminder_action'] ) {
+			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
+			
+			$id = intval( $wpdb->escape( $reminder_id ) );
 
-				//Do the order updating.  For everything with a sort order greater than this reminder, decrease the sort order.
-				$order = "SELECT sort FROM " . $wpdb->prefix . "NFO_Pre_Publish_Reminders WHERE id = $id";
-				$select_order = $wpdb->get_results( $order, ARRAY_A );
-				if($select_order[0]) {
-					$current_order = $select_order[0]['sort'];
-					$redo_reminder_order = "UPDATE " . $wpdb->prefix . "NFO_Pre_Publish_Reminders SET sort = sort - 1 WHERE sort > $current_order";
-					$wpdb->query( $redo_reminder_order );
+			$query = "SELECT * FROM $table_name WHERE id = " . $wpdb->escape( $reminder_id );
 
-					//Delete the reminder from the reminder table
-					$delete = "DELETE FROM " . $wpdb->prefix . NFO_Pre_Publish_Reminders::$tableName . " WHERE id = $id";
-					$wpdb->query( $delete );
-					echo '<div id="message" class="updated fade"><p>Deletion successful.</p></div>';
-				} else {
-					echo '<div id="message" class="error fade"><p>Deletion could not occur because that reminder was not found.</p></div>';
-				}
-			} elseif ( 'edit_reminder' == $array['reminder_action'] ) {
-				$select = "SELECT * FROM " . $wpdb->prefix . NFO_Pre_Publish_Reminders::$tableName . " WHERE id = $id";
-				$result = $wpdb->get_results( $select, ARRAY_A );
-				if( $result[0] ) {
-					$return_array = array();
-					$return_array['editing'] = true;
-					$return_array['text_color'] = $result[0]['text_color'];
-					$return_array['back_color'] = $result[0]['back_color'];
-					$return_array['reminder'] = $result[0]['reminder'];
-					$return_array['is_bold'] = $result[0]['is_bold'];
-					$return_array['is_italic'] = $result[0]['is_italic'];
-					$return_array['sort'] = $result[0]['sort'];
-					$return_array['id'] = $result[0]['id'];
-					return $return_array;
-					echo '<div id="message" class="updated fade"><p>Now editing...</p></div>';
-				} else {
-					echo '<div id="message" class="error fade"><p>Sorry, but there is no reminder with that ID number available for editing.</p></div>';
-				}
-				
+			$row = $wpdb->get_row( $query, ARRAY_A );
+			if( $row ) {
+				return $row;
+			} else {
+				return array();
 			}
 		}
 
@@ -396,22 +437,37 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 * Outputs the current reminders as an ordered list.
 		 */
 		function output_reminder_list() {
+		
+			// Retrieve the global WP database object
 			global $wpdb;
-			$query = "SELECT id, reminder, back_color, text_color, sort, is_bold, is_italic FROM " . $wpdb->prefix . NFO_Pre_Publish_Reminders::$tableName . ' ORDER BY sort';
+			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
+			
+			wp_enqueue_script( 'jquery' );
+			
+			$query = "SELECT id, reminder, back_color, text_color, sort_order, is_strong, is_emphasized, is_underlined FROM $table_name ORDER BY sort_order";
 			$reminders = $wpdb->get_results( $query, ARRAY_A );
 			if( count( $reminders ) > 0 ) {
-				echo '<div id="remindersdiv" class="postbox"><h3><a class="togbox">+</a>Reminders</h3><div class="inside"><form><ol id="reminder_list">';
+			?>
+			<form>
+				<ol id="reminder_list">
+				<?php
 				foreach( $reminders as $reminder ) {
 					$this_reminder = stripslashes( $reminder['reminder'] );
-					if( $reminder['is_bold'] ) {
+					if( $reminder['is_strong'] ) {
 						$this_reminder = '<strong>' . $this_reminder . '</strong>';
 					}
-					if( $reminder['is_italic'] ) {
+					if( $reminder['is_emphasized'] ) {
 						$this_reminder = '<em>' . $this_reminder . '</em>';
 					}
-					echo '<li id="reminder_' . $reminder['id'] . '" style="color:#' . $reminder['text_color'] . '; background-color:#' . $reminder['back_color'] . ';"><input type="checkbox" id="reminder_' . $reminder['id'] . '_checkbox" name="is_completed" value="' . $reminder['id'] . '" onclick="DimReminder(' . $reminder['id'] . ')" /> ' . $this_reminder . '</li>';
+					if( $reminder['is_underlined'] ) {
+						$this_reminder = '<span style="text-decoration:underline;">' . $this_reminder . '</span>';
+					}
+					echo '<li id="reminder_' . $reminder['id'] . '" style="color:#' . $reminder['text_color'] . '; background-color:#' . $reminder['back_color'] . ';"><input type="checkbox" id="reminder_' . $reminder['id'] . '_checkbox" name="is_completed" value="' . $reminder['id'] . '" onclick="PPRDimReminder(' . $reminder['id'] . ')" /> ' . $this_reminder . '</li>';
 				}
-				echo '</ol></form></div></div>';
+				?>
+				</ol>
+			</form>
+			<?php
 			}
 		}
 		
@@ -425,6 +481,6 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 	add_action( 'activate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'install' ) );
 	add_action( 'deactivate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'uninstall' ) );
 	add_action( 'admin_menu', array( 'NFO_Pre_Publish_Reminders', 'add_admin_page' ) );
-	add_action( 'edit_form_advanced', array( 'NFO_Pre_Publish_Reminders', 'output_reminder_list' ) );
+	add_action( "admin_print_scripts", array( 'NFO_Pre_Publish_Reminders', 'admin_head' ) );
 	
 ?>
