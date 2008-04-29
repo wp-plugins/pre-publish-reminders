@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminders
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This plugin allows you to set reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 3.2.0
+Version: 3.2.1
 Author URI: http://nickohrn.com/
 */
 
@@ -41,7 +41,7 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 	 */
 	class NFO_Pre_Publish_Reminders {
 		
-		static $version = '3.2.0';
+		static $version = '3.2.1';
 		static $version_option_name = 'NFO_Pre_Publish_Reminders_Version';
 		var $table_name;
 		
@@ -120,7 +120,7 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 */
 		function add_admin_page() {
 			$page = add_management_page( 'Publishing Reminders', 'Publishing Reminders', 8, basename( __FILE__ ), array( &$this, 'manage_page' ) );
-			add_meta_box('reminders', 'Pre-Publish Reminders', array('NFO_Pre_Publish_Reminders', 'output_reminder_list'), 'post', 'normal');
+			add_meta_box('reminders', 'Pre-Publish Reminders', array( &$this, 'output_reminder_list'), 'post', 'normal' );
 			wp_enqueue_script( 'admin-forms' );
 		}
 		
