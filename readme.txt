@@ -5,7 +5,7 @@ Tags: admin, reminders, list, Post
 Requires at least: 2.5.0
 
 Tested up to: 2.5.1
-Stable tag: 3.1.0
+Stable tag: 3.2.0
 
 This plugin displays a configurable list of reminders directly below the Categories meta box in the Write Post interface.
 

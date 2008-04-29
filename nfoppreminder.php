@@ -4,7 +4,7 @@ Plugin Name: Pre-Publish Reminders
 Plugin URI: http://nickohrn.com/pre-publish-plugin
 Description: This plugin allows you to set reminders of actions you need to take prior to pressing the Publish button on your posts.  The list is customizable via an administration panel that you can find under the manage tab.
 Author: Nick Ohrn
-Version: 3.1.0
+Version: 3.2.0
 Author URI: http://nickohrn.com/
 */
 
@@ -40,9 +40,16 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 	 * Pre-Publish Reminders.
 	 */
 	class NFO_Pre_Publish_Reminders {
-		static $version = '3.1.0';
+		
+		static $version = '3.2.0';
 		static $version_option_name = 'NFO_Pre_Publish_Reminders_Version';
-		static $table_name = 'NFO_Pre_Publish_Reminders';
+		var $table_name;
+		
+		
+		function NFO_Pre_Publish_Reminders() {
+			global $wpdb;
+			$this->table_name = $wpdb->prefix . 'NFO_Pre_Publish_Reminders';
+		}
 
 		/**
 		 * Installs this plugin by first uninstalling any pre-2.0 version and then
@@ -54,16 +61,12 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		function install() {
 			global $wpdb;
 			
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
-
-			echo 'stuff';
-
 			// If the version isn't the same as it was in the past, upgrade the table.
 			if( NFO_Pre_Publish_Reminders::$version != get_option( NFO_Pre_Publish_Reminders::$version_option_name ) ) {
 				// Make sure the table doesn't already exist...
-				if( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
+				if( $wpdb->get_var( "SHOW TABLES LIKE '$this->table_name'" ) != $this->table_name ) {
 					// Create the query that will be executed to create the table to hold all the information about reminders
-					$query = "CREATE TABLE $table_name(
+					$query = "CREATE TABLE $this->table_name(
 								id INT(9) NOT NULL AUTO_INCREMENT,
 								reminder TEXT NOT NULL,
 								back_color VARCHAR(6) DEFAULT 'ffffff' NOT NULL,
@@ -98,13 +101,12 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 */
 		function uninstall() {
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
 			// Check to make sure the table exists before dropping it
-			if( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) == $table_name ) {
+			if( $wpdb->get_var( "SHOW TABLES LIKE '$this->table_name'" ) == $this->table_name ) {
 			
 				// Drop the table
-				$wpdb->query( "DROP TABLE $table_name" );
+				$wpdb->query( "DROP TABLE $this->table_name" );
 			}
 							
 			// Remove the version option
@@ -117,7 +119,7 @@ if(!class_exists('NFO_Pre_Publish_Reminders')) {
 		 * @return null
 		 */
 		function add_admin_page() {
-			$page = add_management_page( 'Publishing Reminders', 'Publishing Reminders', 8, basename( __FILE__ ), array( 'NFO_Pre_Publish_Reminders', 'manage_page' ) );
+			$page = add_management_page( 'Publishing Reminders', 'Publishing Reminders', 8, basename( __FILE__ ), array( &$this, 'manage_page' ) );
 			add_meta_box('reminders', 'Pre-Publish Reminders', array('NFO_Pre_Publish_Reminders', 'output_reminder_list'), 'post', 'normal');
 			wp_enqueue_script( 'admin-forms' );
 		}
@@ -152,13 +154,13 @@ function PPRDimReminder(id) {
 			
 			// Process all the possible input on the page.
 			if( isset( $_POST['submit'] ) ) {
-				$current = NFO_Pre_Publish_Reminders::process_add_or_edit( $_POST );
+				$current = $this->process_add_or_edit( $_POST );
 				
 			} else if( isset( $_POST['deleteit'] ) ) {
-				NFO_Pre_Publish_Reminders::process_delete( $_POST );
+				$this->process_delete( $_POST );
 				
 			} else if( isset ( $_GET['reminder_id'] ) ) {
-				$current = NFO_Pre_Publish_Reminders::get_reminder( $_GET['reminder_id'] );
+				$current = $this->get_reminder( $_GET['reminder_id'] );
 				
 			}
 			
@@ -175,7 +177,7 @@ function PPRDimReminder(id) {
 					</div>
 					<br class="clear" />
 					<?php
-					$number_reminders = NFO_Pre_Publish_Reminders::output_admin_table(); 
+					$number_reminders = $this->output_admin_table(); 
 					?>
 				</form> <!-- End the manage form -->
 				<div class="tablenav">
@@ -260,12 +262,9 @@ function PPRDimReminder(id) {
 		 *
 		 */
 		function output_admin_table() {
-		
-			// Retrieve the global WP database object
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
-			$query = "SELECT * FROM $table_name ORDER BY sort_order ASC";
+			$query = "SELECT * FROM $this->table_name ORDER BY sort_order ASC";
 			$reminders = $wpdb->get_results( $query , ARRAY_A);
 			?>
 			
@@ -327,10 +326,7 @@ function PPRDimReminder(id) {
 		 * @param Array, an array of post variables.
 		 */
 		function process_add_or_edit( $values ) {
-		
-			// Retrieve the global WP database object
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
 			if( $values['reminder_text'] == '' ) {
 				echo '<div id="message" class="error fade"><p>You have to set some reminder text!</p></div>';
@@ -352,7 +348,7 @@ function PPRDimReminder(id) {
 
 				if( isset( $values['id'] ) ) {
 					$id = intval( $values['id'] );
-					$query = "UPDATE $table_name 
+					$query = "UPDATE $this->table_name 
 								SET 
 								reminder = '$reminder_text', back_color = '$back_color', 
 								text_color = '$text_color', sort_order = $order, is_strong = $strong, 
@@ -363,12 +359,12 @@ function PPRDimReminder(id) {
 					
 				} else {
 				
-					$query = "INSERT INTO $table_name 
+					$query = "INSERT INTO $this->table_name 
 								( reminder , back_color, text_color, sort_order, is_strong, is_emphasized, is_underlined ) 
 								VALUES 
 								( '$reminder_text', '$back_color', '$text_color', $order, $strong, $emphasized, $underlined )";
 					$action = 'added';
-					$update_order_result = $wpdb->query( "UPDATE $table_name SET sort_order = sort_order + 1 WHERE sort_order >= $order" );
+					$update_order_result = $wpdb->query( "UPDATE $this->table_name SET sort_order = sort_order + 1 WHERE sort_order >= $order" );
 					$result = $wpdb->query( $query );
 					
 				}
@@ -381,7 +377,7 @@ function PPRDimReminder(id) {
 				}
 			}
 			
-			return NFO_Pre_Publish_Reminders::populate_current( $values );
+			return $this->populate_current( $values );
 		}
 		
 		function populate_current( $values ) {
@@ -403,25 +399,19 @@ function PPRDimReminder(id) {
 		}
 		
 		function process_delete( $values ) {
-			
-			// Retrieve the global WP database object
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
 			foreach( $values['delete'] as $id_to_delete ) {
-				$wpdb->query( "DELETE FROM $table_name WHERE id = " . $wpdb->escape( $id_to_delete ) );
+				$wpdb->query( "DELETE FROM $this->table_name WHERE id = " . $wpdb->escape( $id_to_delete ) );
 			}
 		}
 
 		function get_reminder( $reminder_id ) {
-			
-			// Retrieve the global WP database object
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
 			$id = intval( $wpdb->escape( $reminder_id ) );
 
-			$query = "SELECT * FROM $table_name WHERE id = " . $wpdb->escape( $reminder_id );
+			$query = "SELECT * FROM $this->table_name WHERE id = " . $wpdb->escape( $reminder_id );
 
 			$row = $wpdb->get_row( $query, ARRAY_A );
 			if( $row ) {
@@ -431,20 +421,15 @@ function PPRDimReminder(id) {
 			}
 		}
 
-
-
 		/**
 		 * Outputs the current reminders as an ordered list.
 		 */
 		function output_reminder_list() {
-		
-			// Retrieve the global WP database object
 			global $wpdb;
-			$table_name = $wpdb->prefix . NFO_Pre_Publish_Reminders::$table_name;
 			
 			wp_enqueue_script( 'jquery' );
 			
-			$query = "SELECT id, reminder, back_color, text_color, sort_order, is_strong, is_emphasized, is_underlined FROM $table_name ORDER BY sort_order";
+			$query = "SELECT id, reminder, back_color, text_color, sort_order, is_strong, is_emphasized, is_underlined FROM $this->table_name ORDER BY sort_order";
 			$reminders = $wpdb->get_results( $query, ARRAY_A );
 			if( count( $reminders ) > 0 ) {
 			?>
@@ -478,9 +463,14 @@ function PPRDimReminder(id) {
 /**
  * Insert action hooks here
  */
-	add_action( 'activate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'install' ) );
-	add_action( 'deactivate_nfoppreminder.php', array( 'NFO_Pre_Publish_Reminders', 'uninstall' ) );
-	add_action( 'admin_menu', array( 'NFO_Pre_Publish_Reminders', 'add_admin_page' ) );
-	add_action( "admin_print_scripts", array( 'NFO_Pre_Publish_Reminders', 'admin_head' ) );
+
+if(class_exists('NFO_Pre_Publish_Reminders')) {
+	$ppr = new NFO_Pre_Publish_Reminders();
+	
+	register_activation_hook( __FILE__, array( &$ppr, 'install' ) );
+	register_deactivation_hook( __FILE__, array( &$ppr, 'uninstall' ) );
+	add_action( 'admin_menu', array( &$ppr, 'add_admin_page' ) );
+	add_action( "admin_print_scripts", array( &$ppr, 'admin_head' ) );	
+}
 	
 ?>
