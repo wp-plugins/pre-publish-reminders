@@ -1,17 +1,16 @@
 === Plugin Name ===
 Contributors: nickohrn
-Donate link: http://nickohrn.com
+Donate link: http://nickohrn.com/donate
 Tags: admin, reminders, list, Post
 Requires at least: 2.5.0
-
 Tested up to: 2.5.1
-Stable tag: 3.2.1
+Stable tag: 4.0.0
 
-This plugin displays a configurable list of reminders directly below the Categories meta box in the Write Post interface.
+This plugin displays a configurable list of reminders directly below the Categories meta box in the Write Post and Write Page interface.
 
 == Description ==
 
-Lorelle, of Lorelle on WordPress fame requested a simple reminder plugin that could be used from the administration
+Lorelle, of Lorelle on WordPress, requested a simple reminder plugin that could be used from the administration
 panel within WordPress.  I decided to deliver with this little piece of code.
 
 Your reminders are input through the WordPress administration interface, and you can format them in a variety
@@ -35,11 +34,7 @@ Installation is super simple.  Follow these steps:
 3. Manage your reminders under the Manage/Publish Reminders tab in the administration menu.
 
 == Frequently Asked Questions ==
-=How do I edit a reminder?=
-Click on the sort order in the Manage/Publish Reminders interface.
 
 
 == Screenshots ==
 
-1. The administration screen in action.
-2. The reminder list displayed below the post categories buttons.
