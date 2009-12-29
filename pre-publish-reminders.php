@@ -28,6 +28,7 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 			add_action( 'admin_init', array( &$this, 'modifyReminders' ) );
 			add_action( 'admin_menu', array( &$this, 'addAdministrativeMenuItems' ) );
 			add_action( 'save_post', array( &$this, 'savePostReminders' ) );
+			add_action( 'wp_ajax_sort_pre_publish_reminders', array( &$this, 'sortPrePublishReminders' ) );
 		}
 
 		function addFilters() {
@@ -44,7 +45,7 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 			add_management_page( __( 'Publishing Reminders' ), __( 'Publishing Reminders' ), 'manage_options', 'pre-publish-reminders', array( &$this, 'displayManagementPage' ) );
 			add_meta_box( 'pre-publish-reminders-meta-box', __( 'Pre-Publish Reminders' ), array( &$this, 'displayMetaBox' ), 'page', 'normal' );
 			add_meta_box( 'pre-publish-reminders-meta-box', __( 'Pre-Publish Reminders' ), array( &$this, 'displayMetaBox' ), 'post', 'normal' );
-			wp_enqueue_script( 'ppr-js', plugins_url('resources/pre-publish-reminders.js',__FILE__), array( 'jquery' ) );
+			wp_enqueue_script( 'ppr-js', plugins_url('resources/pre-publish-reminders.js',__FILE__), array( 'jquery', 'jquery-ui-sortable' ) );
 			
 			global $pagenow;
 			if( 'tools.php' == $pagenow && $_GET['page'] == 'pre-publish-reminders' ) {
@@ -75,7 +76,10 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 				$emphasized = $_POST['reminder-modifiers']['emphasized'] == 1;
 				$underlined = $_POST['reminder-modifiers']['underlined'] == 1;
 				
-				$post = array('post_content'=>$text, 'post_type'=>$this->postType, 'post_status' => 'publish');
+				global $wpdb;
+				$maxMenuOrder = $wpdb->get_var( $wpdb->prepare( "SELECT (MAX(menu_order) + 1) FROM {$wpdb->posts} WHERE post_type = %s", $this->postType ) );
+				
+				$post = array('post_content'=>$text, 'post_type'=>$this->postType, 'post_status' => 'publish', 'menu_order' => $maxMenuOrder);
 				if( isset( $_POST['reminder-id'] ) ) {
 					$post['ID'] = absint($_POST['reminder-id']);
 				}
@@ -98,6 +102,16 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 				update_post_meta($postId, $this->_meta_Checked, $checkedReminders);
 			}
 		}
+		
+		function sortPrePublishReminders() {
+			$reminders = wp_parse_args($_POST['reminders']);
+			$reminders = $reminders['reminder'];
+			global $wpdb;
+			for( $i = 0; $i < count( $reminders ); $i++ ) {
+				$wpdb->query($wpdb->prepare( "UPDATE {$wpdb->posts} SET menu_order = %d WHERE ID = %d", $i, $reminders[$i]));
+			}
+			exit();
+		}
 
 		/// DISPLAY
 
@@ -112,7 +126,7 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 		/// UTILITY
 		
 		function getAllReminders() {
-			$reminders = get_posts(array( 'numberposts' => 0, 'post_type' => $this->postType));
+			$reminders = get_posts(array( 'numberposts' => 0, 'post_type' => $this->postType, 'orderby' => 'menu_order', 'order' => 'ASC'));
 			foreach($reminders as $reminder) {
 				$reminder->textColor = get_post_meta($reminder->ID,$this->_meta_TextColor,true);
 				$reminder->backColor = get_post_meta($reminder->ID,$this->_meta_BackColor,true);

@@ -41,11 +41,11 @@ $allReminders = $this->getAllReminders();
 					<th scope="col"><?php _e( 'Underlined?' ); ?></th>
 				</tr>
 			</tfoot>
-			<tbody>
+			<tbody id="reminders-sortable">
 				<?php 
 				foreach( $allReminders as $reminder ) {
 					?>
-					<tr>
+					<tr id="reminder_<?php echo $reminder->ID; ?>">
 						<th scope="row" class="manage-column column-cb check-column">
 							<input type="checkbox" name="reminders-to-delete[]" id="reminders-to-delete-<?php echo $reminder->ID; ?>" value="<?php echo $reminder->ID; ?>" />
 						</th>

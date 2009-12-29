@@ -23,6 +23,22 @@ jQuery(document).ready(function() {
 			jQuery(this).ColorPickerSetColor(this.value);
 		});
 	}
+	
+	jQuery('#reminders-sortable').sortable(
+		{
+			items:'tr',
+			update: function(event, ui) {
+				jQuery.post(
+					'admin-ajax.php',
+					{
+						action:'sort_pre_publish_reminders',
+						reminders:jQuery(this).sortable('serialize')
+					},
+					function(data,status) {}
+				);
+			}
+		}
+	);
 
 });
 
