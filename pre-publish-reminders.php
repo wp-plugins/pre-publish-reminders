@@ -4,7 +4,7 @@
  Plugin URI: http://nickohrn.com/pre-publish-plugin
  Description: This plugin allows you to set reminders for actions that need to be taken before publishing a post.  Examples of actions include setting tags, settings categories, or adding a post signature.
  Author: Nick Ohrn
- Version: 5.0.0
+ Version: 5.0.2
  Author URI: http://plugin-developer.com/
  */
 
@@ -12,7 +12,7 @@ if( !class_exists( 'PrePublishReminders' ) ) {
 
 	class PrePublishReminders {
 
-		var $version = '5.0.0';
+		var $version = '5.0.2';
 		var $postType = 'reminder';
 		var $_meta_Checked = '_reminders-checked';
 		var $_meta_TextColor = '_reminder-text-color';

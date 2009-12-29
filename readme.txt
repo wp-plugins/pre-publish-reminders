@@ -4,7 +4,7 @@ Donate link: http://nickohrn.com/donate
 Tags: admin, reminders, list, post
 Requires at least: 2.9
 Tested up to: 2.9
-Stable tag: 5.0.1
+Stable tag: 5.0.2
 
 This plugin displays a configurable list of reminders on the post administration screen.
 

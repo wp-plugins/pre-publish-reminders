@@ -22,7 +22,7 @@ if( empty( $allReminders ) ) {
 			if( $reminder->emphasized ) {
 				$text = "<em>{$text}</em>";
 			}
-			if( $reminder->underliend ) {
+			if( $reminder->underlined ) {
 				$text = "<span style='text-decoration:underline;'>{$text}</span>";
 			}
 			$text = "<span style='color:#{$reminder->textColor};background-color:#{$reminder->backColor};padding:3px 10px;'>{$text}</span>";
